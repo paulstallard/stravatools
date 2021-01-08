@@ -1,0 +1,8 @@
+stravatools.egg-info/
+activities/
+.client_credentials
+token.json
+token.old
+.DS_Store
+*.png
+!docs/activities.png
