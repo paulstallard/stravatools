@@ -40,6 +40,7 @@ def csv_show(a: dict) -> None:
         "average_speed",
         "distance",
         "training_distance",
+        "total_elevation_gain"
     ]
     if first_time:
         print(",".join(columns))
@@ -57,6 +58,7 @@ def extract_data(data: dict) -> dict:
         "distance": data["distance"],
         "average_speed": data["average_speed"],
         "elapsed_time": data["moving_time"],
+        "total_elevation_gain": data["total_elevation_gain"],
     }
     if deets["act_type"] == "Run":
         deets["speed"] = mins_per(deets["average_speed"], 1000)
