@@ -21,16 +21,19 @@ def get_polylines(filename: str) -> List[str]:
     ]
 
 
-def coords_from_plotline(pl: str) -> Tuple[List[int], List[int]]:
+def transform(ll_pairs: List[Tuple[float, float]]) -> List[Tuple[float, float]]:
+    # Calc correction factor to scale the x coordinates
+    # (based on the activity's first point)
+    correction = math.cos(math.radians(ll_pairs[0][0]))
+    return [(x*correction, y) for y, x in ll_pairs]
+
+
+def coords_from_plotline(pl: str) -> Tuple[List, List]:
     # Takes a polyline and returns two lists (x, y) of coordinates
     if not pl:
         sys.exit("Expecting a valid polyline")
     decoded = polyline.decode(pl)
-    # Calc correction factor to scale the x coordinates
-    # (based on the activities first point)
-    correction = math.cos(decoded[0][0])
-    y = [d[0] for d in decoded]
-    x = [d[1] * correction for d in decoded]
+    x, y = map(list, zip(*transform(decoded)))
     return x, y
 
 
