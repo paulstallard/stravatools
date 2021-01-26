@@ -18,8 +18,8 @@ def fmt_elevation(d: float) -> str:
 
 
 def show_stats(title: str, vals: list, format):
-    print(title,
-          f"{format(sum(vals))},",
+    print(f"{title:14s}:",
+          f"{format(sum(vals))}\t",
           f"(min {format(min(vals))},",
           f"max {format(max(vals))},",
           f"mean {format(mean(vals))},",
@@ -50,11 +50,11 @@ def main():
         unique_dates.add(row[date_index])
 
     if unique_dates:
-        print(f"{n+1} activities, on {len(unique_dates)} days")
-        show_stats("Time (HH:MM)", duration, fmt_time)
-        show_stats("Distance (km)", distance, fmt_distance)
-        show_stats("Running equivalent (km)", training, fmt_distance)
+        print(f"{n+1} activities on {len(unique_dates)} days")
+        show_stats("Time (hh:mm)", duration, fmt_time)
         show_stats("Elevation (m)", elevation, fmt_elevation)
+        show_stats("Distance (km)", distance, fmt_distance)
+        show_stats("Training (~km)", training, fmt_distance)
 
 
 if __name__ == "__main__":
