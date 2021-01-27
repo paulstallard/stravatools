@@ -4,6 +4,7 @@ import OSGridConverter as osg
 import polyline
 from math import radians, cos, sin, asin, sqrt
 from statistics import mean
+import sys
 
 
 def polyline_bounding_box(pl: str, border: float = 0.0):
@@ -15,7 +16,7 @@ def polyline_bounding_box(pl: str, border: float = 0.0):
 
 def bb_add_border(bb, border: float):
     """Add a border of `border` km to all sides of bb."""
-    lat_border = border * 360/40075
+    lat_border = border * 360 / 40075
     mid_lat = mean([bb[0], bb[2]])
     lon_border = lat_border / cos(radians(mid_lat))
     return bb[0] - lat_border, bb[1] - lon_border, bb[2] + lat_border, bb[3] + lon_border
@@ -73,20 +74,26 @@ def find(point, radius, files, *, min_rad=0, activity_type=None, bb=False):
 
 def get_latlon(s):
     bits = s.split(",")
-    lat = float(bits[0])
-    lon = float(bits[1])
+    try:
+        lat = float(bits[0])
+        lon = float(bits[1])
+    except ValueError:
+        sys.exit("Error: expecting lat lon location in the form '50.203, 0.3241'")
     return lat, lon
 
 
 def get_latlon_from_grid(s):
-    latlon = osg.grid2latlong(s)
+    try:
+        latlon = osg.grid2latlong(s)
+    except (osg.base.OSGridError, TypeError) as error:
+        sys.exit("Error: Invalid OS grid reference. Expecting something like 'TQ 271 865'")
     return latlon.latitude, latlon.longitude
 
 
 def main():
     parser = argparse.ArgumentParser(
         description="Find activities near given location (distances in km)",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument("-m", "--min", type=float, default=0.0, help="find activities at least this far from location")
     parser.add_argument("-g", "--grid", action="store_true", default=False, help="use OS Grid Ref")

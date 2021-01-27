@@ -86,7 +86,7 @@ Find activities within a radius (specified by `--distance`)of a given `location`
 By default `strava_find` will search for activities with a starting point within the specified distance of `location`.
 A minimum distance (`-min`) can also be given to search in an annulus around `location`.
 
-Alternatively, the `--boundingbox` option will return activities for which location is in the bounding box of the activity, extended by `distance`.
+Alternatively, the `--boundingbox` option will return activities for which `location` is in the bounding box of the activity, extended by `distance`.
 
 ```
 usage: strava_find [-h] [-m MIN] [-g] [-b] [-d DISTANCE] [-a {Run,Hike,Bike}]
