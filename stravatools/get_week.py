@@ -55,8 +55,8 @@ def get_auth_token() -> str:
 
     refresh_token = data["refresh_token"]
     print(f"Need a new token: refresh_token={refresh_token}")
-    move_file(token_filename, token_filename_old)
     data = get_new_token(refresh_token)
+    move_file(token_filename, token_filename_old)
     with open(token_filename, "w") as outfile:
         json.dump(data, outfile)
     return data["access_token"]
