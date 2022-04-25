@@ -1,12 +1,17 @@
 from setuptools import setup, find_packages
 
+required = ["polyline", "matplotlib", "requests", "osgridconverter"]
+
+dev_required = ["pytest", "mypy"]
+
 setup(
     name='stravatools',
     version='0.1',
     description='Collection of Strava tools',
     author='Paul',
     author_email='pwastallard@googlemail.com',
-    install_requires=[],
+    install_requires=required,
+    extras_require={"dev": dev_required},
     packages=find_packages(),
     entry_points={
         'console_scripts': [
