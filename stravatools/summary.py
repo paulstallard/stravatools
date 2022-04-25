@@ -1,8 +1,9 @@
-import os
-import json
 import argparse
-import sys
 import csv
+from decimal import Decimal
+import json
+import os
+import sys
 from stravatools import weeks
 
 
@@ -23,7 +24,7 @@ def mins_per(average_speed: float, distance: int = 1000) -> str:
 def simple_show(a: dict) -> None:
     print(a["date"])
     print(f'{a["start_time"]} {a["act_type"]} - {a["name"]}. {pretty_time(a["elapsed_time"])} [{a["speed"]}]')
-    print(f'{a["distance"]/1000:.02f}')
+    print(f'{a["distance"]/Decimal(1000)}')
 
 
 first_time = True
@@ -65,12 +66,12 @@ def extract_data(data: dict) -> dict:
         deets["training_distance"] = deets["distance"]
     elif deets["act_type"] == "Swim":
         deets["speed"] = mins_per(deets["average_speed"], 100)
-        deets["training_distance"] = deets["distance"] * 3
+        deets["training_distance"] = deets["distance"] * Decimal(3)
     elif deets["act_type"] in ["Ride", "VirtualRide"]:
-        deets["speed"] = f'{deets["average_speed"] * 3.6:.01f}'
-        deets["training_distance"] = deets["distance"] / 4
+        deets["speed"] = f'{float(deets["average_speed"]) * 3.6:.02f}'
+        deets["training_distance"] = deets["distance"] / Decimal(4)
     else:
-        deets["speed"] = f'{deets["average_speed"] * 3.6:.01f}'
+        deets["speed"] = f'{float(deets["average_speed"]) * 3.6:.02f}'
         deets["training_distance"] = 0
     return deets
 
@@ -79,7 +80,7 @@ def summary(filename: str, csv: bool):
     if not os.path.isfile(filename):
         sys.exit(f"{filename} does not exist")
     with open(filename) as json_file:
-        data = json.load(json_file)
+        data = json.load(json_file, parse_float=Decimal)
         for i in reversed(data):
             activity = extract_data(i)
             if csv:

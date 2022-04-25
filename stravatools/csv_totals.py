@@ -10,7 +10,7 @@ def fmt_time(s: float) -> str:
 
 
 def fmt_distance(d: float) -> str:
-    return f"{d/1000:.2f}"
+    return f"{d/1000:.1f}"
 
 
 def fmt_elevation(d: float) -> str:
