@@ -58,6 +58,7 @@ def gridplot(pls: list, output_filename: str) -> None:
             if pls:
                 x, y = coords_from_plotline(pls.pop(0))
                 ax[r, c].plot(x, y, linewidth=0.3)
+                # ax[r, c].plot(x, y, linewidth=0.3, marker="o", markersize=.8)
                 ax[r, c].axis("equal")
             ax[r, c].axis("off")
     plt.subplots_adjust(hspace=0, wspace=0)
