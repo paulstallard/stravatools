@@ -1,10 +1,11 @@
 import argparse
 import json
+import sys
+from math import asin, cos, radians, sin, sqrt
+from statistics import mean
+
 import OSGridConverter as osg
 import polyline
-from math import radians, cos, sin, asin, sqrt
-from statistics import mean
-import sys
 
 
 def polyline_bounding_box(pl: str, border: float = 0.0):
@@ -49,7 +50,32 @@ def haversine(lat1, lon1, lat2, lon2):
     return c * r
 
 
-def find(point, radius, files, *, min_rad=0, activity_type=None, bb=False):
+def bb_compare(pl, point, s, radius, min_rad):
+    bounding_box = polyline_bounding_box(pl)
+    bounding_box = bb_add_point(bounding_box, s)
+    bounding_box = bb_add_border(bounding_box, radius)
+    proximity = point_in_bounding_box(point, bounding_box)
+    return proximity, 0
+
+
+def start_compare(pl, point, s, radius, min_rad):
+    d = haversine(*point, *s)
+    proximity = min_rad <= d < radius
+    return proximity, d
+
+
+def all_compare(pl, point, s, radius, min_rad):
+    route = polyline.decode(pl)
+    d = haversine(*point, *s)
+    for r in route:
+        distance = haversine(*point, *r)
+        if distance < d:
+            d = distance
+    proximity = min_rad <= d < radius
+    return proximity, d
+
+
+def find(point, radius, files, compare_fn, *, min_rad=0, activity_type=None):
     for f in files:
         with open(f) as json_file:
             data = json.load(json_file)
@@ -58,18 +84,10 @@ def find(point, radius, files, *, min_rad=0, activity_type=None, bb=False):
             act_type = act["type"]
             if not s or (activity_type and act_type != activity_type):
                 continue
-            if bb:
-                bounding_box = polyline_bounding_box(act["map"]["summary_polyline"])
-                bounding_box = bb_add_point(bounding_box, s)
-                bounding_box = bb_add_border(bounding_box, radius)
-                proximity = point_in_bounding_box(point, bounding_box)
-                d = 0
-            else:
-                d = haversine(*point, *s)
-                proximity = min_rad <= d < radius
+            proximity, d = compare_fn(act["map"]["summary_polyline"], point, s, radius, min_rad)
             if proximity:
                 url = f"https://www.strava.com/activities/{act['id']}"
-                print(f"{d:.02f} {url} - {act_type} {act['name']} - {act['start_date_local']}")
+                print(f"{d:.02f} {url} - {act_type} - {act['name']} - {act['start_date_local']}")
 
 
 def get_latlon(s):
@@ -86,7 +104,7 @@ def get_latlon_from_grid(s):
     try:
         latlon = osg.grid2latlong(s)
     except (osg.base.OSGridError, TypeError) as error:
-        sys.exit("Error: Invalid OS grid reference. Expecting something like 'TQ 271 865'")
+        sys.exit(f"Error: Invalid OS grid reference. Expecting something like 'TQ 271 865': {error}")
     return latlon.latitude, latlon.longitude
 
 
@@ -98,11 +116,11 @@ def main():
     parser.add_argument("-m", "--min", type=float, default=0.0, help="find activities at least this far from location")
     parser.add_argument("-g", "--grid", action="store_true", default=False, help="use OS Grid Ref")
     parser.add_argument(
-        "-b",
-        "--boundingbox",
-        action="store_true",
-        default=False,
-        help="use activity bounding box instead of start point",
+        "--mode",
+        type=str,
+        default="start",
+        choices=["start", "box", "all"],
+        help="matching mode",
     )
     parser.add_argument(
         "-d", "--distance", type=float, default=1.0, help="find activities as most this far from location"
@@ -124,7 +142,15 @@ def main():
     else:
         ll = get_latlon(args.location)
 
-    find(ll, args.distance, args.files, min_rad=args.min, activity_type=args.activity, bb=args.boundingbox)
+    if args.mode == "start":
+        compare_fn = start_compare
+    elif args.mode == "box":
+        compare_fn = bb_compare
+        print("BB")
+    else:
+        compare_fn = all_compare
+
+    find(ll, args.distance, args.files, compare_fn, min_rad=args.min, activity_type=args.activity)
 
 
 if __name__ == "__main__":

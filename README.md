@@ -84,12 +84,16 @@ Find activities within a radius (specified by `--distance`)of a given `location`
 `location` can be specified with (latitude,longitude) or a UK Ordnance Survey grid reference.
 
 By default `strava_find` will search for activities with a starting point within the specified distance of `location`.
-A minimum distance (`-min`) can also be given to search in an annulus around `location`.
+A minimum distance (`--min`) can also be given to search in an annulus around `location`.
 
-Alternatively, the `--boundingbox` option will return activities for which `location` is in the bounding box of the activity, extended by `distance`.
+The `mode` flag affects the way activities are selected:
+* `start` (default): compares `location` and the starting point of the activity
+* `box`: search for activities for which `location` is in the bounding box of the activity, extended by `distance`
+* `all`: search for activities that have a point on the polyline within `distance` of `location`
 
 ```
-usage: strava_find [-h] [-m MIN] [-g] [-b] [-d DISTANCE] [-a {Run,Hike,Bike}]
+usage: strava_find [-h] [-m MIN] [-g] [--mode {start,box,all}] [-d DISTANCE]
+                   [-a {Run,Hike,Bike}]
                    location files [files ...]
 
 Find activities near given location (distances in km)
@@ -98,13 +102,13 @@ positional arguments:
   location              location of interest
   files                 activity files
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -m MIN, --min MIN     find activities at least this far from location
                         (default: 0.0)
   -g, --grid            use OS Grid Ref (default: False)
-  -b, --boundingbox     use activity bounding box instead of start point
-                        (default: False)
+  --mode {start,box,all}
+                        matching mode (default: start)
   -d DISTANCE, --distance DISTANCE
                         find activities as most this far from location
                         (default: 1.0)
