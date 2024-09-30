@@ -14,9 +14,10 @@ def get_polylines(filename: str) -> List[str]:
         sys.exit(f"{filename} does not exist")
     with open(filename) as json_file:
         data = json.load(json_file)
+    data.sort(key=lambda x: x["start_date"])
     return [
         act["map"]["summary_polyline"]
-        for act in reversed(data)
+        for act in data
         if "map" in act and "summary_polyline" in act["map"] and act["map"]["summary_polyline"]
     ]
 
