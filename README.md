@@ -91,8 +91,11 @@ The `mode` flag affects the way activities are selected:
 * `box`: search for activities for which `location` is in the bounding box of the activity, extended by `distance`
 * `all`: search for activities that have a point on the polyline within `distance` of `location`
 
+`strava_find` has options to change the output sorting order and limit the number of returned results.
+
 ```
-usage: strava_find [-h] [-m MIN] [-g] [--mode {start,box,all}] [-d DISTANCE]
+usage: strava_find [-h] [-m MIN] [-g] [-r] [-n NUMBER]
+                   [--mode {start,box,all}] [-d DISTANCE] [-s {distance,date}]
                    [-a {Run,Hike,Bike}]
                    location files [files ...]
 
@@ -107,11 +110,16 @@ options:
   -m MIN, --min MIN     find activities at least this far from location
                         (default: 0.0)
   -g, --grid            use OS Grid Ref (default: False)
+  -r, --reverse         reverse order of results (default: False)
+  -n NUMBER, --number NUMBER
+                        show only top 'number' results (default: None)
   --mode {start,box,all}
                         matching mode (default: start)
   -d DISTANCE, --distance DISTANCE
                         find activities as most this far from location
                         (default: 1.0)
+  -s {distance,date}, --sort {distance,date}
+                        sort results using (default: distance)
   -a {Run,Hike,Bike}, --activity {Run,Hike,Bike}
                         only show activities of this type (default: None)
 ```

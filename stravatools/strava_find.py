@@ -54,8 +54,12 @@ def bb_compare(pl, point, s, radius, min_rad):
     bounding_box = polyline_bounding_box(pl)
     bounding_box = bb_add_point(bounding_box, s)
     bounding_box = bb_add_border(bounding_box, radius)
-    proximity = point_in_bounding_box(point, bounding_box)
-    return proximity, 0
+    if point_in_bounding_box(point, bounding_box):
+        mid_lat = mean([bounding_box[0], bounding_box[2]])
+        mid_lon = mean([bounding_box[1], bounding_box[3]])
+        d = haversine(*point, mid_lat, mid_lon)
+        return True, d
+    return False, 0
 
 
 def start_compare(pl, point, s, radius, min_rad):
@@ -76,6 +80,7 @@ def all_compare(pl, point, s, radius, min_rad):
 
 
 def find(point, radius, files, compare_fn, *, min_rad=0, activity_type=None):
+    found = []
     for f in files:
         with open(f) as json_file:
             data = json.load(json_file)
@@ -86,8 +91,8 @@ def find(point, radius, files, compare_fn, *, min_rad=0, activity_type=None):
                 continue
             proximity, d = compare_fn(act["map"]["summary_polyline"], point, s, radius, min_rad)
             if proximity:
-                url = f"https://www.strava.com/activities/{act['id']}"
-                print(f"{d:.02f} {url} - {act_type} - {act['name']} - {act['start_date_local']}")
+                found.append([d, act["id"], act_type, act["name"], act["start_date_local"]])
+    return found
 
 
 def get_latlon(s):
@@ -115,6 +120,8 @@ def main():
     )
     parser.add_argument("-m", "--min", type=float, default=0.0, help="find activities at least this far from location")
     parser.add_argument("-g", "--grid", action="store_true", default=False, help="use OS Grid Ref")
+    parser.add_argument("-r", "--reverse", action="store_true", default=False, help="reverse order of results")
+    parser.add_argument("-n", "--number", type=int, default=None, help="show only top 'number' results")
     parser.add_argument(
         "--mode",
         type=str,
@@ -124,6 +131,14 @@ def main():
     )
     parser.add_argument(
         "-d", "--distance", type=float, default=1.0, help="find activities as most this far from location"
+    )
+    parser.add_argument(
+        "-s",
+        "--sort",
+        type=str,
+        choices=["distance", "date"],
+        default="distance",
+        help="sort results using"
     )
     parser.add_argument(
         "-a",
@@ -146,11 +161,17 @@ def main():
         compare_fn = start_compare
     elif args.mode == "box":
         compare_fn = bb_compare
-        print("BB")
     else:
         compare_fn = all_compare
 
-    find(ll, args.distance, args.files, compare_fn, min_rad=args.min, activity_type=args.activity)
+    found = find(ll, args.distance, args.files, compare_fn, min_rad=args.min, activity_type=args.activity)
+    if args.sort == "distance":
+        found.sort(key=lambda x: x[0], reverse=args.reverse)
+    else:
+        found.sort(key=lambda x: x[4], reverse=args.reverse)
+    for a in found[:args.number]:
+        url = f"https://www.strava.com/activities/{a[1]}"
+        print(f"{a[0]:.02f} {url} - {a[2]} - {a[3]} - {a[4]}")
 
 
 if __name__ == "__main__":
