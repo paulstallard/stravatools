@@ -1,6 +1,7 @@
 import argparse
 import json
 import sys
+import webbrowser
 from math import asin, cos, radians, sin, sqrt
 from statistics import mean
 
@@ -122,6 +123,7 @@ def main():
     parser.add_argument("-g", "--grid", action="store_true", default=False, help="use OS Grid Ref")
     parser.add_argument("-r", "--reverse", action="store_true", default=False, help="reverse order of results")
     parser.add_argument("-n", "--number", type=int, default=None, help="show only top 'number' results")
+    parser.add_argument("-o", "--open", action="store_true", help="open every (CAREFUL!) returned route in a browser")
     parser.add_argument(
         "--mode",
         type=str,
@@ -171,7 +173,10 @@ def main():
         found.sort(key=lambda x: x[4], reverse=args.reverse)
     for a in found[:args.number]:
         url = f"https://www.strava.com/activities/{a[1]}"
-        print(f"{a[0]:.02f} {url} - {a[2]} - {a[3]} - {a[4]}")
+        if args.open:
+            webbrowser.open_new(url)
+        else:
+            print(f"{a[0]:.02f} {url} - {a[2]} - {a[3]} - {a[4]}")
 
 
 if __name__ == "__main__":
