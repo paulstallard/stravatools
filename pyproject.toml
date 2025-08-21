@@ -1,0 +1,31 @@
+[project]
+name = "stravatools"
+authors = [
+    {name = "Paul Stallard", email = "pwastallard@googlemail.com"},
+]
+description = "Collection of Strava tools"
+readme = "README.md"
+version = "0.1.0"
+requires-python = ">= 3.12"
+dependencies = [
+    "requests>=2.32.3",
+    "polyline>=2.0.2",
+    "matplotlib>=3.9.1",
+    "osgridconverter>=0.1.3",
+]
+
+[project.scripts]
+strava_summary = "stravatools.summary:main"
+strava_find = "stravatools.strava_find:main"
+strava_get = "stravatools.get_week:main"
+strava_gridplot = "stravatools.gridplot:main"
+strava_csv_totals = "stravatools.csv_totals:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.4",
+]
